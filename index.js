@@ -1,11 +1,6 @@
 const express = require("express");
-const {
-  addBook,
-  deleteBook,
-  editBook,
-  getBooks,
-  getBook,
-} = require("./libraryStore.js");
+const { store } = require("./libraryStoreClass.js");
+const { addBook, deleteBook, editBook, getBooks, getBook } = store;
 
 const app = express();
 app.use(express.json());
