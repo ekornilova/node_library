@@ -11,6 +11,7 @@ class LibraryStore {
     favorite,
     fileCover,
     fileName,
+    fileBook,
   }) => {
     const book = new Book({
       title,
@@ -19,6 +20,7 @@ class LibraryStore {
       favorite,
       fileCover,
       fileName,
+      fileBook,
     });
     this.books.push(book);
     return book;
@@ -40,6 +42,7 @@ class LibraryStore {
     favorite,
     fileCover,
     fileName,
+    fileBook,
     id,
   }) => {
     const idx = this.books.findIndex((book) => book.id === id);
@@ -54,6 +57,7 @@ class LibraryStore {
       favorite,
       fileCover,
       fileName,
+      fileBook,
       id,
     };
     return this.books[idx];
