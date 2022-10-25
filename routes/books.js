@@ -2,12 +2,27 @@ const express = require("express");
 const pageNotFound = require("../helpers/pageNotFound.js");
 const { store } = require("../libraryStoreClass.js");
 const { addBook, deleteBook, editBook, getBooks, getBook } = store;
-const fileMulter = require("../middleware/file");
 
 const router = express.Router();
 
 router.get("/", (_, res) => {
-  res.json(getBooks());
+  res.render("books/index", {
+    title: "Books",
+    books: getBooks(),
+  });
+});
+
+router.get("/create", (req, res) => {
+  res.render("books/create", {
+    title: "Book | create",
+    book: {},
+  });
+});
+
+router.post("/create", (req, res) => {
+  const book = addBook(req.body);
+
+  res.redirect(`/books`);
 });
 
 router.get("/:id", (req, res) => {
@@ -15,59 +30,50 @@ router.get("/:id", (req, res) => {
   const book = getBook(id);
 
   if (book) {
-    res.json(book);
+    res.render("books/view", {
+      title: "Book | view",
+      book,
+    });
   } else {
-    pageNotFound(res);
+    res.redirect("/404");
   }
 });
 
-router.post("/", fileMulter.single("fileBook"), (req, res) => {
-  let fileBook = "";
-  if (req.file) {
-    fileBook = req.file.path;
-  }
-  const book = addBook({ ...req.body, fileBook });
+router.get("/update/:id", (req, res) => {
+  const { id } = req.params;
+  const book = getBook(id);
 
-  res.status(201);
-  res.json(book);
+  if (book) {
+    res.render("books/update", {
+      title: "Book | update",
+      book,
+    });
+  } else {
+    res.redirect("/404");
+  }
 });
 
-router.put("/:id", fileMulter.single("fileBook"), (req, res) => {
+router.post("/update/:id", (req, res) => {
   const { id } = req.params;
   const patchData = { ...req.body, id };
-  if (req.file) {
-    patchData.fileBook = req.file.path;
-  }
   const book = editBook(patchData);
 
   if (book) {
-    res.json(book);
+    res.redirect(`/books`);
   } else {
-    pageNotFound(res);
+    res.redirect("/404");
   }
 });
 
-router.delete("/:id", (req, res) => {
+router.post("/delete/:id", (req, res) => {
   const { id } = req.params;
   const isDeleted = deleteBook(id);
 
   if (isDeleted) {
-    res.json("ok");
+    res.redirect(`/books`);
   } else {
-    pageNotFound(res);
+    res.redirect("/404");
   }
-});
-
-router.get("/:id/download", (req, res) => {
-  const { id } = req.params;
-  const book = getBook(id);
-
-  if (!book || !book.fileBook) {
-    pageNotFound(res);
-    return;
-  }
-
-  res.download(`${process.cwd()}/${book.fileBook}`);
 });
 
 module.exports = router;
