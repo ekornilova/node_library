@@ -2,7 +2,7 @@
   "name": "node_library",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "server": "node src/index",
@@ -21,8 +21,9 @@
   "dependencies": {
     "ejs": "^3.1.8",
     "express": "^4.18.2",
+    "mongoose": "^6.7.2",
     "multer": "^1.4.5-lts.1",
-    "uuid": "^9.0.0",
-    "nodemon": "^2.0.20"
+    "nodemon": "^2.0.20",
+    "uuid": "^9.0.0"
   }
 }

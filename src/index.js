@@ -1,4 +1,6 @@
 const express = require("express");
+const mongoose = require("mongoose");
+
 const apiBooksRouter = require("./routes/api/books.js");
 const apiAuthRouter = require("./routes/api/auth.js");
 const booksRouter = require("./routes/books.js");
@@ -18,5 +20,17 @@ app.use("/api/books", apiBooksRouter);
 app.use("/api/user", apiAuthRouter);
 app.use(error404);
 
+const startServer = async (port, mogooseUrl) => {
+  try {
+    console.log({ port, mogooseUrl });
+    await mongoose.connect(mogooseUrl);
+    app.listen(port);
+  } catch (e) {
+    console.log(e);
+  }
+};
+
 const PORT = process.env.PORT || 3000;
-app.listen(PORT);
+const MOGOOSE_URL = process.env.MOGOOSE_URL || "";
+
+startServer(PORT, MOGOOSE_URL);
