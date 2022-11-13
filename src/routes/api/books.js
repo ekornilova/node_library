@@ -1,10 +1,13 @@
 const express = require("express");
+const axios = require("axios");
 const pageNotFound = require("../../helpers/pageNotFound.js");
 const { store } = require("../../libraryStoreClass.js");
 const { addBook, deleteBook, editBook, getBooks, getBook } = store;
 const fileMulter = require("../../middleware/file");
 
 const router = express.Router();
+const COUNTER_HOST = process.env.COUNTER_HOST || "localhost";
+const COUNTER_PORT = process.env.COUNTER_PORT || "3000";
 
 router.get("/", (_, res) => {
   res.json(getBooks());
@@ -15,7 +18,17 @@ router.get("/:id", (req, res) => {
   const book = getBook(id);
 
   if (book) {
-    res.json(book);
+    axios
+      .get(`http://${COUNTER_HOST}:${COUNTER_PORT}/counter/${book.id}`)
+      .then(({ data }) => {
+        return res.json({
+          ...book,
+          count: data.count,
+        });
+      })
+      .catch((err) => {
+        return res.status(500).send({ message: err });
+      });
   } else {
     pageNotFound(res);
   }
@@ -27,9 +40,17 @@ router.post("/", fileMulter.single("fileBook"), (req, res) => {
     fileBook = req.file.path;
   }
   const book = addBook({ ...req.body, fileBook });
-
-  res.status(201);
-  res.json(book);
+  axios
+    .post(`http://${COUNTER_HOST}:${COUNTER_PORT}/counter/${book.id}/incr`)
+    .then(({ data }) => {
+      return res.json({
+        ...book,
+        count: data.count,
+      });
+    })
+    .catch((err) => {
+      return res.status(500).send({ message: err });
+    });
 });
 
 router.put("/:id", fileMulter.single("fileBook"), (req, res) => {
