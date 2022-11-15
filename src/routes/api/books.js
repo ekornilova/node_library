@@ -23,7 +23,7 @@ router.get("/:id", async (req, res) => {
 
     res.status(200).json(book);
   } catch (e) {
-    res.status(500).json(e);
+    res.status(404).json(e);
   }
 });
 
@@ -69,7 +69,7 @@ router.put("/:id", fileMulter.single("fileBook"), async (req, res) => {
     });
     res.redirect(`/api/books/${id}`);
   } catch (e) {
-    res.status(500).json(e);
+    res.status(404).json(e);
   }
 });
 
@@ -82,7 +82,7 @@ router.delete("/:id", async (req, res) => {
     });
     res.json("ok");
   } catch (e) {
-    res.status(500).json(e);
+    res.status(404).json(e);
   }
 });
 
