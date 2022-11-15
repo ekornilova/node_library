@@ -1,73 +1,89 @@
 const express = require("express");
-const pageNotFound = require("../../helpers/pageNotFound.js");
-const { store } = require("../../libraryStoreClass.js");
-const { addBook, deleteBook, editBook, getBooks, getBook } = store;
+
+const Book = require("../../models/book");
 const fileMulter = require("../../middleware/file");
 
 const router = express.Router();
 
-router.get("/", (_, res) => {
-  res.json(getBooks());
-});
+router.get("/", async (_, res) => {
+  try {
+    const bookList = await Book.find().select("-__v");
 
-router.get("/:id", (req, res) => {
-  const { id } = req.params;
-  const book = getBook(id);
-
-  if (book) {
-    res.json(book);
-  } else {
-    pageNotFound(res);
+    res.status(200).json(bookList);
+  } catch (e) {
+    res.status(500).json(e);
   }
 });
 
-router.post("/", fileMulter.single("fileBook"), (req, res) => {
-  let fileBook = "";
+router.get("/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const book = await Book.findById(id).select("-__v");
+
+    res.status(200).json(book);
+  } catch (e) {
+    res.status(404).json(e);
+  }
+});
+
+router.post("/", fileMulter.single("fileBook"), async (req, res) => {
+  const { title, description, authors, favorite, fileCover } = req.body;
+  let fileName = "";
   if (req.file) {
-    fileBook = req.file.path;
+    fileName = req.file.path;
   }
-  const book = addBook({ ...req.body, fileBook });
+  const newBook = new Book({
+    title,
+    description,
+    authors,
+    favorite,
+    fileCover,
+    fileName,
+  });
+  try {
+    await newBook.save();
 
-  res.status(201);
-  res.json(book);
+    res.status(201).json(newBook);
+  } catch (e) {
+    res.status(500).json(e);
+  }
 });
 
-router.put("/:id", fileMulter.single("fileBook"), (req, res) => {
+router.put("/:id", fileMulter.single("fileBook"), async (req, res) => {
   const { id } = req.params;
-  const patchData = { ...req.body, id };
+  const { title, description, authors, favorite, fileCover } = req.body;
+  let fileName = "";
   if (req.file) {
-    patchData.fileBook = req.file.path;
+    fileName = req.file.path;
   }
-  const book = editBook(patchData);
 
-  if (book) {
-    res.json(book);
-  } else {
-    pageNotFound(res);
+  try {
+    await Book.findByIdAndUpdate(id, {
+      title,
+      description,
+      authors,
+      favorite,
+      fileCover,
+      fileName,
+    });
+    res.redirect(`/api/books/${id}`);
+  } catch (e) {
+    res.status(404).json(e);
   }
 });
 
-router.delete("/:id", (req, res) => {
-  const { id } = req.params;
-  const isDeleted = deleteBook(id);
+router.delete("/:id", async (req, res) => {
+  const { id: _id } = req.params;
 
-  if (isDeleted) {
+  try {
+    await Book.deleteOne({
+      _id,
+    });
     res.json("ok");
-  } else {
-    pageNotFound(res);
+  } catch (e) {
+    res.status(404).json(e);
   }
-});
-
-router.get("/:id/download", (req, res) => {
-  const { id } = req.params;
-  const book = getBook(id);
-
-  if (!book || !book.fileBook) {
-    pageNotFound(res);
-    return;
-  }
-
-  res.download(`${process.cwd()}/${book.fileBook}`);
 });
 
 module.exports = router;

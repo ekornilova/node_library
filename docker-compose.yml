@@ -1,0 +1,12 @@
+services:
+  counter:
+    image: node:latest
+    volumes:
+      - ./:/app
+    ports:
+      - 80:3002
+    environment:
+      - PORT=3002
+      - MOGOOSE_URL=mongodb+srv://ekornilova:crfhktn6726693@cluster0.m1aki72.mongodb.net/?retryWrites=true&w=majority
+    working_dir: /app
+    command: ["npm", "run", "dev"]

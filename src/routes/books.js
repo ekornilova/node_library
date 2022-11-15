@@ -1,15 +1,24 @@
 const express = require("express");
-const pageNotFound = require("../helpers/pageNotFound.js");
-const { store } = require("../libraryStoreClass.js");
-const { addBook, deleteBook, editBook, getBooks, getBook } = store;
+const Book = require("../models/book");
 
 const router = express.Router();
-
-router.get("/", (_, res) => {
-  res.render("books/index", {
-    title: "Books",
-    books: getBooks(),
+const showError = (res, e) => {
+  res.render("errors/500", {
+    title: "Ошибка!!",
+    message: e,
   });
+};
+
+router.get("/", async (_, res) => {
+  try {
+    const bookList = await Book.find().select("-__v");
+    res.render("books/index", {
+      title: "Books",
+      books: bookList,
+    });
+  } catch (e) {
+    showError(res, e);
+  }
 });
 
 router.get("/create", (req, res) => {
@@ -19,60 +28,83 @@ router.get("/create", (req, res) => {
   });
 });
 
-router.post("/create", (req, res) => {
-  const book = addBook(req.body);
+router.post("/create", async (req, res) => {
+  const { title, description } = req.body;
+  const newBook = new Book({
+    title,
+    description,
+  });
+  try {
+    await newBook.save();
 
-  res.redirect(`/books`);
+    res.redirect(`/books`);
+  } catch (e) {
+    showError(res, e);
+  }
 });
 
-router.get("/:id", (req, res) => {
+router.get("/:id", async (req, res) => {
   const { id } = req.params;
-  const book = getBook(id);
 
-  if (book) {
+  try {
+    const book = await Book.findById(id).select("-__v");
+
+    if (!book) {
+      res.redirect("/404");
+      return;
+    }
     res.render("books/view", {
       title: "Book | view",
       book,
     });
-  } else {
-    res.redirect("/404");
+  } catch (e) {
+    showError(res, e);
   }
 });
 
-router.get("/update/:id", (req, res) => {
+router.get("/update/:id", async (req, res) => {
   const { id } = req.params;
-  const book = getBook(id);
+  try {
+    const book = await Book.findById(id).select("-__v");
 
-  if (book) {
+    if (!book) {
+      res.redirect("/404");
+      return;
+    }
     res.render("books/update", {
       title: "Book | update",
       book,
     });
-  } else {
-    res.redirect("/404");
+  } catch (e) {
+    showError(res, e);
   }
 });
 
-router.post("/update/:id", (req, res) => {
+router.post("/update/:id", async (req, res) => {
   const { id } = req.params;
-  const patchData = { ...req.body, id };
-  const book = editBook(patchData);
+  const { title, description } = req.body;
 
-  if (book) {
+  try {
+    await Book.findByIdAndUpdate(id, {
+      title,
+      description,
+    });
     res.redirect(`/books`);
-  } else {
-    res.redirect("/404");
+  } catch (e) {
+    showError(res, e);
   }
 });
 
-router.post("/delete/:id", (req, res) => {
-  const { id } = req.params;
-  const isDeleted = deleteBook(id);
+router.post("/delete/:id", async (req, res) => {
+  const { id: _id } = req.params;
 
-  if (isDeleted) {
+  try {
+    await Book.deleteOne({
+      _id,
+    });
     res.redirect(`/books`);
-  } else {
-    res.redirect("/404");
+  } catch (e) {
+    showError(res, e);
   }
 });
 
