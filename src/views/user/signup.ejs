@@ -1,0 +1,28 @@
+<%- include('../port/layout-start', {title: title}) %> <%-
+include('../port/topbar') %>
+<form action="/user/signup" method="post">
+  <div>
+    <label>Логин:</label>
+    <input type="text" name="username" /><br />
+  </div>
+  <div>
+    <label>Пароль:</label>
+    <input type="password" name="password" />
+  </div>
+  <div>
+    <label>Повторите пароль:</label>
+    <input type="password" name="repeatPassword" />
+  </div>
+  <div>
+    <label>Email:</label>
+    <input type="email" name="email" />
+  </div>
+  <div>
+    <label>DisplayName:</label>
+    <input type="text" name="displayName" />
+  </div>
+  <div>
+    <input type="submit" value="Зарегистрироваться" />
+  </div>
+</form>
+<%- include('../port/layout-end') %>
