@@ -1,5 +1,7 @@
 const express = require("express");
 const session = require("express-session");
+const http = require("http");
+const socketIO = require("socket.io");
 const userRouter = require("./routes/user.js");
 const apiBooksRouter = require("./routes/api/books.js");
 const apiAuthRouter = require("./routes/api/auth.js");
@@ -8,8 +10,14 @@ const logger = require("./middleware/logger.js");
 const error404 = require("./middleware/error404");
 const indexRouter = require("./routes/index");
 const userPassport = require("./userPassport.js");
+const connectToSocket = require("./connectToSocket");
 
 const app = express();
+
+const server = http.Server(app);
+const io = socketIO(server);
+connectToSocket(io);
+
 app.use(express.json());
 app.use(express.urlencoded());
 
@@ -28,4 +36,4 @@ app.use("/user", userRouter);
 app.use(error404);
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT);
+server.listen(PORT);
