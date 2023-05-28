@@ -13,7 +13,7 @@ module.exports = (io) => {
     });
 
     socket.on("disconnect", () => {
-      console.log(`Socket disconnected: ${id}`);
+      console.log(`Socket disconnected : ${id}`);
     });
   });
 };
